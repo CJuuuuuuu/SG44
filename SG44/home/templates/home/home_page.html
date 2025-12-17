@@ -1,21 +1,389 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block body_class %}template-homepage{% endblock %}
-
+{% extends "base.html" %} {% load wagtailcore_tags wagtailimages_tags static %}
 {% block extra_css %}
+<style>
+  /* 橫幅區 */
+  .hero-section {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
 
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-<link rel="stylesheet" href="{% static 'css/welcome_page.css' %}">
-{% endblock extra_css %}
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+  }
 
-{% block content %}
+  .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
 
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-{% include 'home/welcome_page.html' %}
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 2rem;
+    max-width: 800px;
+  }
 
-{% endblock content %}
+  .hero-content h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .hero-content p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease-out 0.2s both;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 1rem 3rem;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+    animation: fadeInUp 1s ease-out 0.4s both;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: #f8f9fa;
+  }
+
+  /* 資訊卡片區 */
+  .info-section {
+    background: white;
+    padding: 4rem 2rem;
+    margin-top: -100px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .info-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .info-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 15px;
+    transition: transform 0.3s;
+  }
+
+  .info-item:hover {
+    transform: translateY(-5px);
+  }
+
+  .info-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .info-value {
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  /* 簡介區 */
+  .intro-section {
+    max-width: 1200px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    text-align: center;
+  }
+
+  .intro-section h2 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+  }
+
+  .intro-content {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #666;
+  }
+
+  /* 特色區 */
+  .features-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 5rem 2rem;
+  }
+
+  .features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .features-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 3rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .feature-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .feature-text {
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* 內容區 */
+  .content-section {
+    max-width: 1200px;
+    margin: 5rem auto;
+    padding: 0 2rem;
+  }
+
+  .content-section h2 {
+    font-size: 2rem;
+    color: #333;
+    margin: 3rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid #667eea;
+  }
+
+  .content-section img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 15px;
+    margin: 2rem 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .content-section blockquote {
+    border-left: 5px solid #667eea;
+    padding-left: 2rem;
+    margin: 2rem 0;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #666;
+    background: #f8f9fa;
+    padding: 1.5rem 2rem;
+    border-radius: 0 10px 10px 0;
+  }
+
+  /* 動畫 */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 響應式 */
+  @media (max-width: 768px) {
+    .hero-content h1 {
+      font-size: 2.5rem;
+    }
+
+    .hero-content p {
+      font-size: 1.2rem;
+    }
+
+    .info-section {
+      margin-top: 0;
+    }
+
+    .features-grid,
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- 橫幅區 -->
+<section class="hero-section">
+  {% if page.banner_image %} {% image page.banner_image original as banner %}
+  <img src="{{ banner.url }}" alt="{{ page.banner_title }}" class="hero-bg" />
+  {% endif %}
+  <div class="hero-content">
+    <h1>{{ page.banner_title }}</h1>
+    {% if page.banner_subtitle %}
+    <p>{{ page.banner_subtitle }}</p>
+    {% endif %} {% if page.registration_link %}
+    <a href="{{ page.registration_link }}" class="hero-cta">立即報名</a>
+    {% endif %}
+  </div>
+</section>
+
+<!-- 研討會資訊卡片 -->
+{% if page.conference_date or page.conference_location %}
+<section class="info-section">
+  <div class="info-container">
+    <div class="info-card">
+      <h2 style="text-align: center; color: #667eea; margin-bottom: 1rem">
+        研討會資訊
+      </h2>
+      <div class="info-grid">
+        {% if page.conference_date %}
+        <div class="info-item">
+          <div class="info-icon">📅</div>
+          <div class="info-label">日期</div>
+          <div class="info-value">{{ page.conference_date }}</div>
+        </div>
+        {% endif %} {% if page.conference_location %}
+        <div class="info-item">
+          <div class="info-icon">📍</div>
+          <div class="info-label">地點</div>
+          <div class="info-value">{{ page.conference_location }}</div>
+        </div>
+        {% endif %} {% if page.registration_deadline %}
+        <div class="info-item">
+          <div class="info-icon">⏰</div>
+          <div class="info-label">報名截止</div>
+          <div class="info-value">
+            {{ page.registration_deadline|date:"Y/m/d" }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- 簡介區 -->
+{% if page.intro %}
+<section class="intro-section">
+  <h2>關於研討會</h2>
+  <div class="intro-content">{{ page.intro|richtext }}</div>
+</section>
+{% endif %}
+
+<!-- 特色區 -->
+{% if page.feature_1_title or page.feature_2_title or page.feature_3_title %}
+<section class="features-section">
+  <div class="features-container">
+    <h2 class="features-title">為什麼參加 SG44？</h2>
+    <div class="features-grid">
+      {% if page.feature_1_title %}
+      <div class="feature-card">
+        <div class="feature-icon">{{ page.feature_1_icon|default:"✨" }}</div>
+        <h3 class="feature-title">{{ page.feature_1_title }}</h3>
+        <p class="feature-text">{{ page.feature_1_text }}</p>
+      </div>
+      {% endif %} {% if page.feature_2_title %}
+      <div class="feature-card">
+        <div class="feature-icon">{{ page.feature_2_icon|default:"🎯" }}</div>
+        <h3 class="feature-title">{{ page.feature_2_title }}</h3>
+        <p class="feature-text">{{ page.feature_2_text }}</p>
+      </div>
+      {% endif %} {% if page.feature_3_title %}
+      <div class="feature-card">
+        <div class="feature-icon">{{ page.feature_3_icon|default:"🚀" }}</div>
+        <h3 class="feature-title">{{ page.feature_3_title }}</h3>
+        <p class="feature-text">{{ page.feature_3_text }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- 主要內容 -->
+{% if page.body %}
+<section class="content-section">
+  {% for block in page.body %} {% if block.block_type == 'heading' %}
+  <h2>{{ block.value }}</h2>
+  {% elif block.block_type == 'paragraph' %} {{ block.value|richtext }} {% elif
+  block.block_type == 'image' %} {% image block.value width-1200 %} {% elif
+  block.block_type == 'quote' %}
+  <blockquote>{{ block.value }}</blockquote>
+  {% elif block.block_type == 'embed' %}
+  <div style="text-align: center; margin: 2rem 0">
+    <a href="{{ block.value }}" target="_blank" style="color: #667eea"
+      >{{ block.value }}</a
+    >
+  </div>
+  {% endif %} {% endfor %}
+</section>
+{% endif %} {% endblock %}
