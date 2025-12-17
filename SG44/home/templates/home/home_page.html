@@ -1,389 +1,602 @@
-{% extends "base.html" %} {% load wagtailcore_tags wagtailimages_tags static %}
-{% block extra_css %}
-<style>
-  /* 橫幅區 */
-  .hero-section {
-    position: relative;
-    height: 100vh;
-    min-height: 600px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
+{% load static wagtailcore_tags %}
 
-  .hero-section::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 1;
-  }
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page.title_zh }} | {{ page.theme_zh }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Noto Sans TC", sans-serif;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f5f5f4;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #a8a29e;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #78716c;
+      }
+    </style>
+  </head>
+  <body class="bg-white text-stone-800 antialiased">
+    <!-- Navbar -->
+    <nav
+      id="navbar"
+      class="fixed w-full z-50 transition-all duration-300 border-b bg-white border-transparent py-5"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-12">
+          <!-- Logo -->
+          <div class="flex-shrink-0 flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-[#5F7161] text-white flex items-center justify-center rounded-sm"
+            >
+              <span class="font-bold text-lg">SG</span>
+            </div>
+            <div class="flex flex-col">
+              <span
+                class="font-bold text-stone-800 text-lg leading-tight tracking-wide"
+              >
+                SG44 測量及空間資訊
+              </span>
+              <span class="text-xs text-stone-500 font-medium tracking-wider">
+                SURVEYING & GEOMATICS
+              </span>
+            </div>
+          </div>
 
-  .hero-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-  }
+          <!-- Desktop Menu -->
+          <div class="hidden md:flex items-center space-x-8">
+            <a
+              href="#"
+              class="text-stone-600 hover:text-[#5F7161] font-medium transition-colors text-sm"
+              >首頁</a
+            >
+            <a
+              href="#about"
+              class="text-stone-600 hover:text-[#5F7161] font-medium transition-colors text-sm"
+              >關於大會</a
+            >
+            <a
+              href="#news"
+              class="text-stone-600 hover:text-[#5F7161] font-medium transition-colors text-sm"
+              >最新消息</a
+            >
+            <a
+              href="#topics"
+              class="text-stone-600 hover:text-[#5F7161] font-medium transition-colors text-sm"
+              >徵稿資訊</a
+            >
+            <a
+              href="#schedule"
+              class="text-stone-600 hover:text-[#5F7161] font-medium transition-colors text-sm"
+              >議程表</a
+            >
+            <a
+              href="#"
+              class="bg-[#5F7161] text-white px-5 py-2 rounded-sm text-sm font-medium hover:bg-[#4a584b] transition-colors"
+            >
+              立即報名
+            </a>
+          </div>
 
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    color: white;
-    padding: 2rem;
-    max-width: 800px;
-  }
-
-  .hero-content h1 {
-    font-size: 4rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    animation: fadeInUp 1s ease-out;
-  }
-
-  .hero-content p {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
-    animation: fadeInUp 1s ease-out 0.2s both;
-  }
-
-  .hero-cta {
-    display: inline-block;
-    padding: 1rem 3rem;
-    background: white;
-    color: #667eea;
-    text-decoration: none;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: all 0.3s;
-    animation: fadeInUp 1s ease-out 0.4s both;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  .hero-cta:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    background: #f8f9fa;
-  }
-
-  /* 資訊卡片區 */
-  .info-section {
-    background: white;
-    padding: 4rem 2rem;
-    margin-top: -100px;
-    position: relative;
-    z-index: 10;
-  }
-
-  .info-container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .info-card {
-    background: white;
-    border-radius: 20px;
-    padding: 3rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-
-  .info-item {
-    text-align: center;
-    padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 15px;
-    transition: transform 0.3s;
-  }
-
-  .info-item:hover {
-    transform: translateY(-5px);
-  }
-
-  .info-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-label {
-    font-weight: 600;
-    color: #667eea;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .info-value {
-    font-size: 1.2rem;
-    color: #333;
-  }
-
-  /* 簡介區 */
-  .intro-section {
-    max-width: 1200px;
-    margin: 4rem auto;
-    padding: 0 2rem;
-    text-align: center;
-  }
-
-  .intro-section h2 {
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 1.5rem;
-  }
-
-  .intro-content {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: #666;
-  }
-
-  /* 特色區 */
-  .features-section {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 5rem 2rem;
-  }
-
-  .features-container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .features-title {
-    text-align: center;
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 3rem;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-  }
-
-  .feature-card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  }
-
-  .feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  .feature-title {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-
-  .feature-text {
-    color: #666;
-    line-height: 1.6;
-  }
-
-  /* 內容區 */
-  .content-section {
-    max-width: 1200px;
-    margin: 5rem auto;
-    padding: 0 2rem;
-  }
-
-  .content-section h2 {
-    font-size: 2rem;
-    color: #333;
-    margin: 3rem 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 3px solid #667eea;
-  }
-
-  .content-section img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 15px;
-    margin: 2rem 0;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  }
-
-  .content-section blockquote {
-    border-left: 5px solid #667eea;
-    padding-left: 2rem;
-    margin: 2rem 0;
-    font-size: 1.2rem;
-    font-style: italic;
-    color: #666;
-    background: #f8f9fa;
-    padding: 1.5rem 2rem;
-    border-radius: 0 10px 10px 0;
-  }
-
-  /* 動畫 */
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* 響應式 */
-  @media (max-width: 768px) {
-    .hero-content h1 {
-      font-size: 2.5rem;
-    }
-
-    .hero-content p {
-      font-size: 1.2rem;
-    }
-
-    .info-section {
-      margin-top: 0;
-    }
-
-    .features-grid,
-    .info-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
-{% endblock %} {% block content %}
-<!-- 橫幅區 -->
-<section class="hero-section">
-  {% if page.banner_image %} {% image page.banner_image original as banner %}
-  <img src="{{ banner.url }}" alt="{{ page.banner_title }}" class="hero-bg" />
-  {% endif %}
-  <div class="hero-content">
-    <h1>{{ page.banner_title }}</h1>
-    {% if page.banner_subtitle %}
-    <p>{{ page.banner_subtitle }}</p>
-    {% endif %} {% if page.registration_link %}
-    <a href="{{ page.registration_link }}" class="hero-cta">立即報名</a>
-    {% endif %}
-  </div>
-</section>
-
-<!-- 研討會資訊卡片 -->
-{% if page.conference_date or page.conference_location %}
-<section class="info-section">
-  <div class="info-container">
-    <div class="info-card">
-      <h2 style="text-align: center; color: #667eea; margin-bottom: 1rem">
-        研討會資訊
-      </h2>
-      <div class="info-grid">
-        {% if page.conference_date %}
-        <div class="info-item">
-          <div class="info-icon">📅</div>
-          <div class="info-label">日期</div>
-          <div class="info-value">{{ page.conference_date }}</div>
-        </div>
-        {% endif %} {% if page.conference_location %}
-        <div class="info-item">
-          <div class="info-icon">📍</div>
-          <div class="info-label">地點</div>
-          <div class="info-value">{{ page.conference_location }}</div>
-        </div>
-        {% endif %} {% if page.registration_deadline %}
-        <div class="info-item">
-          <div class="info-icon">⏰</div>
-          <div class="info-label">報名截止</div>
-          <div class="info-value">
-            {{ page.registration_deadline|date:"Y/m/d" }}
+          <!-- Mobile Menu Button -->
+          <div class="md:hidden">
+            <button
+              id="mobile-menu-btn"
+              class="text-stone-600 hover:text-stone-900"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+            </button>
           </div>
         </div>
-        {% endif %}
       </div>
-    </div>
-  </div>
-</section>
-{% endif %}
 
-<!-- 簡介區 -->
-{% if page.intro %}
-<section class="intro-section">
-  <h2>關於研討會</h2>
-  <div class="intro-content">{{ page.intro|richtext }}</div>
-</section>
-{% endif %}
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden md:hidden bg-white border-b border-stone-200"
+      >
+        <div class="px-4 pt-2 pb-6 space-y-1">
+          <a
+            href="#"
+            class="block px-3 py-3 text-stone-600 hover:text-[#5F7161] hover:bg-stone-50 font-medium rounded-md"
+            >首頁</a
+          >
+          <a
+            href="#about"
+            class="block px-3 py-3 text-stone-600 hover:text-[#5F7161] hover:bg-stone-50 font-medium rounded-md"
+            >關於大會</a
+          >
+          <a
+            href="#news"
+            class="block px-3 py-3 text-stone-600 hover:text-[#5F7161] hover:bg-stone-50 font-medium rounded-md"
+            >最新消息</a
+          >
+          <a
+            href="#topics"
+            class="block px-3 py-3 text-stone-600 hover:text-[#5F7161] hover:bg-stone-50 font-medium rounded-md"
+            >徵稿資訊</a
+          >
+          <a
+            href="#schedule"
+            class="block px-3 py-3 text-stone-600 hover:text-[#5F7161] hover:bg-stone-50 font-medium rounded-md"
+            >議程表</a
+          >
+        </div>
+      </div>
+    </nav>
 
-<!-- 特色區 -->
-{% if page.feature_1_title or page.feature_2_title or page.feature_3_title %}
-<section class="features-section">
-  <div class="features-container">
-    <h2 class="features-title">為什麼參加 SG44？</h2>
-    <div class="features-grid">
-      {% if page.feature_1_title %}
-      <div class="feature-card">
-        <div class="feature-icon">{{ page.feature_1_icon|default:"✨" }}</div>
-        <h3 class="feature-title">{{ page.feature_1_title }}</h3>
-        <p class="feature-text">{{ page.feature_1_text }}</p>
-      </div>
-      {% endif %} {% if page.feature_2_title %}
-      <div class="feature-card">
-        <div class="feature-icon">{{ page.feature_2_icon|default:"🎯" }}</div>
-        <h3 class="feature-title">{{ page.feature_2_title }}</h3>
-        <p class="feature-text">{{ page.feature_2_text }}</p>
-      </div>
-      {% endif %} {% if page.feature_3_title %}
-      <div class="feature-card">
-        <div class="feature-icon">{{ page.feature_3_icon|default:"🚀" }}</div>
-        <h3 class="feature-title">{{ page.feature_3_title }}</h3>
-        <p class="feature-text">{{ page.feature_3_text }}</p>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</section>
-{% endif %}
-
-<!-- 主要內容 -->
-{% if page.body %}
-<section class="content-section">
-  {% for block in page.body %} {% if block.block_type == 'heading' %}
-  <h2>{{ block.value }}</h2>
-  {% elif block.block_type == 'paragraph' %} {{ block.value|richtext }} {% elif
-  block.block_type == 'image' %} {% image block.value width-1200 %} {% elif
-  block.block_type == 'quote' %}
-  <blockquote>{{ block.value }}</blockquote>
-  {% elif block.block_type == 'embed' %}
-  <div style="text-align: center; margin: 2rem 0">
-    <a href="{{ block.value }}" target="_blank" style="color: #667eea"
-      >{{ block.value }}</a
+    <!-- Hero Section -->
+    <div
+      class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-white"
     >
-  </div>
-  {% endif %} {% endfor %}
-</section>
-{% endif %} {% endblock %}
+      <!-- Background Grid -->
+      <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <svg
+          class="w-full h-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <pattern
+              id="grid"
+              width="8"
+              height="8"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 8 0 L 0 0 0 8"
+                fill="none"
+                stroke="#869D85"
+                stroke-width="0.1"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          <path
+            d="M0 80 Q 25 70 50 85 T 100 80"
+            fill="none"
+            stroke="#869D85"
+            stroke-width="0.2"
+          />
+          <path
+            d="M0 85 Q 25 75 50 90 T 100 85"
+            fill="none"
+            stroke="#869D85"
+            stroke-width="0.2"
+          />
+        </svg>
+      </div>
+
+      <div
+        class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+      >
+        <!-- <div
+          class="inline-flex items-center px-3 py-1 rounded-full border border-[#B5C4B1] bg-[#F0F4F1] text-[#5F7161] text-xs font-semibold tracking-wide mb-8"
+        >
+          <span
+            class="w-2 h-2 rounded-full bg-[#869D85] mr-2 animate-pulse"
+          ></span>
+          SG44 研討會
+        </div> -->
+
+        <h1
+          class="text-4xl md:text-6xl font-extrabold text-stone-900 tracking-tight leading-tight mb-4"
+        >
+          <span class="block text-[#5F7161]"
+            >{{ page.theme_zh|slice:":4" }}</span
+          >
+          <span class="block mt-2">{{ page.theme_zh|slice:"5:" }}</span>
+        </h1>
+
+        <p class="mt-4 text-xl text-stone-500 font-light tracking-wide">
+          {{ page.theme_en }}
+        </p>
+
+        <div
+          class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-6 text-stone-600"
+        >
+          <div class="flex items-center gap-2">
+            <svg
+              class="w-5 h-5 text-[#869D85]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span class="font-medium">{{ page.conference_date }}</span>
+          </div>
+          <div class="hidden sm:block text-stone-300">|</div>
+          <div class="flex items-center gap-2">
+            <svg
+              class="w-5 h-5 text-[#869D85]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
+            </svg>
+            <span class="font-medium">{{ page.location }}</span>
+          </div>
+        </div>
+
+        <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="#"
+            class="group inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-sm text-white bg-[#5F7161] hover:bg-[#4a584b] transition-all duration-200"
+          >
+            立即報名
+            <svg
+              class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+          </a>
+          <a
+            href="#"
+            class="inline-flex items-center justify-center px-8 py-3.5 border border-stone-300 text-base font-medium rounded-sm text-stone-700 bg-white hover:bg-stone-50 transition-all duration-200"
+          >
+            徵稿須知
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- News Section -->
+    <section id="news" class="py-20 bg-white border-t border-stone-100">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2 class="text-3xl font-bold text-stone-800 tracking-tight">
+            最新消息
+          </h2>
+          <div class="mt-2 w-24 h-1 bg-[#869D85] mx-auto rounded-full"></div>
+          <p class="mt-4 text-stone-500 max-w-2xl mx-auto">
+            News & Announcements
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          {% for news in page.news_items.all %}
+          <a
+            href="{{ news.link }}"
+            class="group block bg-white border border-stone-200 p-6 rounded-sm hover:border-[#869D85] transition-all duration-200"
+          >
+            <div
+              class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <span
+                    class="text-sm font-semibold text-[#5F7161] bg-[#F0F4F1] px-2 py-0.5 rounded"
+                  >
+                    {{ news.category }}
+                  </span>
+                  <span class="text-sm text-stone-400 font-mono">
+                    {{ news.date|date:"Y-m-d" }}
+                  </span>
+                </div>
+                <h3
+                  class="text-lg font-medium text-stone-800 group-hover:text-[#5F7161] transition-colors"
+                >
+                  {{ news.title }}
+                </h3>
+              </div>
+              <div class="flex-shrink-0">
+                <svg
+                  class="w-5 h-5 text-stone-300 group-hover:text-[#869D85] transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Topics Section -->
+    <section id="topics" class="py-24 bg-[#F0F4F1]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2 class="text-3xl font-bold text-stone-800 tracking-tight">
+            徵稿主題
+          </h2>
+          <div class="mt-2 w-24 h-1 bg-[#869D85] mx-auto rounded-full"></div>
+          <p class="mt-4 text-stone-500 max-w-2xl mx-auto">
+            Exploring the Frontiers of Spatial Information
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for topic in page.topics.all %}
+          <div
+            class="bg-white p-8 rounded-sm border border-stone-200 hover:border-[#869D85] transition-all duration-300 group"
+          >
+            <div
+              class="w-12 h-12 bg-[#F0F4F1] rounded-lg flex items-center justify-center mb-6 group-hover:bg-[#E2E8E4] transition-colors"
+            >
+              {% include 'home/includes/icon.html' with icon=topic.icon_name %}
+            </div>
+            <h3 class="text-xl font-bold text-stone-800 mb-3">
+              {{ topic.title }}
+            </h3>
+            <p class="text-stone-600 leading-relaxed text-sm">
+              {{ topic.description }}
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2 class="text-3xl font-bold text-stone-800 tracking-tight">
+            重要時程
+          </h2>
+          <div class="mt-2 w-24 h-1 bg-[#869D85] mx-auto rounded-full"></div>
+          <p class="mt-4 text-stone-500 max-w-2xl mx-auto">Important Dates</p>
+        </div>
+
+        <div class="relative mt-16">
+          <!-- Mobile View -->
+          <div
+            class="md:hidden space-y-8 border-l-2 border-stone-100 ml-4 pl-8"
+          >
+            {% for event in page.timeline_events.all %}
+            <div class="relative">
+              <div
+                class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-white {% if event.is_past %}bg-stone-300{% else %}bg-[#5F7161] ring-4 ring-[#F0F4F1]{% endif %}"
+              ></div>
+              <span
+                class="text-sm font-mono {% if event.is_past %}text-stone-400{% else %}text-[#5F7161] font-semibold{% endif %}"
+              >
+                {{ event.date|date:"Y/m/d" }}
+              </span>
+              <h4
+                class="text-lg mt-1 {% if event.is_past %}text-stone-400{% else %}text-stone-800 font-bold{% endif %}"
+              >
+                {{ event.title }}
+              </h4>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Desktop View -->
+          <div class="hidden md:flex justify-between items-start relative">
+            <div
+              class="absolute top-5 left-0 w-full h-0.5 bg-stone-100 -z-10"
+            ></div>
+
+            {% for event in page.timeline_events.all %}
+            <div class="flex flex-col items-center text-center w-1/5">
+              <div
+                class="w-4 h-4 rounded-full border-2 border-white mb-6 relative z-10 transition-all duration-300 {% if event.is_past %}bg-stone-300 scale-90{% else %}bg-[#5F7161] ring-4 ring-[#F0F4F1] scale-110{% endif %}"
+              ></div>
+              <span
+                class="block text-sm font-mono mb-2 {% if event.is_past %}text-stone-400{% else %}text-[#5F7161] font-semibold{% endif %}"
+              >
+                {{ event.date|date:"Y/m/d" }}
+              </span>
+              <h4
+                class="text-base px-2 {% if event.is_past %}text-stone-400{% else %}text-stone-800 font-bold{% endif %}"
+              >
+                {{ event.title }}
+              </h4>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#485649] text-stone-300 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div class="space-y-4">
+            <h3
+              class="text-white text-lg font-bold mb-4 border-l-4 border-[#869D85] pl-3"
+            >
+              SG44 研討會
+            </h3>
+            <p class="text-sm leading-relaxed text-[#D6E0D7]">
+              {{ page.theme_en }}
+            </p>
+            <div class="pt-4 space-y-2">
+              <p class="text-sm text-[#D6E0D7]">
+                主辦單位：{{ page.organizer }}
+              </p>
+              <p class="text-sm text-[#D6E0D7]">
+                承辦單位：{{ page.co_organizer }}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-white text-lg font-bold mb-6">相關連結</h3>
+            <ul class="space-y-3 text-sm">
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >台灣測量工程學會</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >國立政治大學</a
+                >
+              </li>
+              <li>
+                <a href="#" class="hover:text-white transition-colors"
+                  >內政部國土測繪中心</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-white text-lg font-bold mb-6">聯絡我們</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-3">
+                <svg
+                  class="w-5 h-5 text-[#869D85] mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  ></path>
+                </svg>
+                <div class="text-sm">
+                  <span class="block text-[#D6E0D7]">大會秘書處</span>
+                  <a
+                    href="mailto:{{ page.contact_email }}"
+                    class="hover:text-white transition-colors"
+                    >{{ page.contact_email }}</a
+                  >
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <svg
+                  class="w-5 h-5 text-[#869D85] mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  ></path>
+                </svg>
+                <div class="text-sm">
+                  <span class="block text-[#D6E0D7]">聯絡電話</span>
+                  <span class="block">{{ page.contact_phone }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-[#5F7161] mt-12 pt-8 text-center text-xs text-[#AABCA6]"
+        >
+          <p>
+            © 2024 SG44 Conference on Surveying and Geomatics. All rights
+            reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Navbar scroll effect
+      window.addEventListener("scroll", function () {
+        const navbar = document.getElementById("navbar");
+        if (window.scrollY > 20) {
+          navbar.classList.add(
+            "bg-white/95",
+            "backdrop-blur-sm",
+            "border-stone-200",
+            "py-3"
+          );
+          navbar.classList.remove("border-transparent", "py-5");
+        } else {
+          navbar.classList.remove(
+            "bg-white/95",
+            "backdrop-blur-sm",
+            "border-stone-200",
+            "py-3"
+          );
+          navbar.classList.add("border-transparent", "py-5");
+        }
+      });
+
+      // Mobile menu toggle
+      document
+        .getElementById("mobile-menu-btn")
+        .addEventListener("click", function () {
+          const menu = document.getElementById("mobile-menu");
+          menu.classList.toggle("hidden");
+        });
+
+      // Smooth scroll
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          const href = this.getAttribute("href");
+          if (href !== "#") {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,172 +1,141 @@
 from django.db import models
+from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
+from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel as Panel
+from wagtail.admin.panels import InlinePanel, MultiFieldPanel
+from wagtail.api import APIField
+from wagtail.fields import RichTextField
 from wagtail.models import Page
-from wagtail.fields import RichTextField, StreamField
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail import blocks
-from wagtail.images.blocks import ImageChooserBlock
+from wagtail.snippets.models import register_snippet
 
 
 class HomePage(Page):
-    """首頁"""
+    """研討會首頁"""
     
-    # === 橫幅區 ===
-    banner_image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name="橫幅圖片"
-    )
+    # 會議基本資訊
+    title_zh = models.CharField("中文標題", max_length=255, default="第44屆測量及空間資訊研討會")
+    subtitle_en = models.CharField("英文副標題", max_length=255, default="SG44 Conference on Surveying and Geomatics")
+    theme_zh = models.CharField("中文主題", max_length=255, default="智測國土，韌期未來")
+    theme_en = models.CharField("英文主題", max_length=255, default="Smart Surveying of National Land, Resilient Future")
     
-    banner_title = models.CharField(
-        max_length=255,
-        default="SG44 研討會",
-        verbose_name="橫幅標題"
-    )
+    conference_date = models.CharField("會議日期", max_length=100, default="2024年 8月 29日 (四) - 30日 (五)")
+    location = models.CharField("會議地點", max_length=255, default="國立政治大學 法學院")
+    organizer = models.CharField("主辦單位", max_length=255, default="國立政治大學 地政學系")
+    co_organizer = models.CharField("承辦單位", max_length=255, default="國立政治大學 地政學系")
     
-    banner_subtitle = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="橫幅副標題"
-    )
+    # 聯絡資訊
+    contact_email = models.EmailField("聯絡信箱", default="sg44@example.com")
+    contact_phone = models.CharField("聯絡電話", max_length=50, default="02-29393091")
     
-    # === 研討會資訊 ===
-    conference_date = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="研討會日期"
-    )
+    # Hero 區塊
+    hero_description = RichTextField("首頁描述", blank=True)
     
-    conference_location = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="研討會地點"
-    )
-    
-    registration_deadline = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="報名截止日期"
-    )
-    
-    registration_link = models.URLField(
-        blank=True,
-        verbose_name="報名連結"
-    )
-    
-    # === 主要內容 ===
-    intro = RichTextField(
-        blank=True,
-        verbose_name="簡介"
-    )
-    
-    body = StreamField([
-        ('heading', blocks.CharBlock(
-            form_classname="title",
-            label="標題",
-            icon="title"
-        )),
-        ('paragraph', blocks.RichTextBlock(
-            label="段落",
-            icon="pilcrow"
-        )),
-        ('image', ImageChooserBlock(
-            label="圖片",
-            icon="image"
-        )),
-        ('quote', blocks.BlockQuoteBlock(
-            label="引言",
-            icon="openquote"
-        )),
-        ('embed', blocks.URLBlock(
-            label="嵌入連結（YouTube等）",
-            icon="media"
-        )),
-    ], blank=True, use_json_field=True, verbose_name="內容區塊")
-    
-    # === 特色區塊 ===
-    feature_1_icon = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="特色1圖示",
-        help_text="例如：📅"
-    )
-    feature_1_title = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="特色1標題"
-    )
-    feature_1_text = models.TextField(
-        blank=True,
-        verbose_name="特色1說明"
-    )
-    
-    feature_2_icon = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="特色2圖示"
-    )
-    feature_2_title = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="特色2標題"
-    )
-    feature_2_text = models.TextField(
-        blank=True,
-        verbose_name="特色2說明"
-    )
-    
-    feature_3_icon = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="特色3圖示"
-    )
-    feature_3_title = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="特色3標題"
-    )
-    feature_3_text = models.TextField(
-        blank=True,
-        verbose_name="特色3說明"
-    )
-
     content_panels = Page.content_panels + [
         MultiFieldPanel([
-            FieldPanel('banner_image'),  # 改這裡！
-            FieldPanel('banner_title'),
-            FieldPanel('banner_subtitle'),
-        ], heading="橫幅設定"),
+            FieldPanel('title_zh'),
+            FieldPanel('subtitle_en'),
+            FieldPanel('theme_zh'),
+            FieldPanel('theme_en'),
+        ], heading="會議標題"),
         
         MultiFieldPanel([
             FieldPanel('conference_date'),
-            FieldPanel('conference_location'),
-            FieldPanel('registration_deadline'),
-            FieldPanel('registration_link'),
-        ], heading="研討會資訊"),
-        
-        FieldPanel('intro'),
-        FieldPanel('body'),
+            FieldPanel('location'),
+            FieldPanel('organizer'),
+            FieldPanel('co_organizer'),
+        ], heading="會議資訊"),
         
         MultiFieldPanel([
-            FieldPanel('feature_1_icon'),
-            FieldPanel('feature_1_title'),
-            FieldPanel('feature_1_text'),
-        ], heading="特色1"),
+            FieldPanel('contact_email'),
+            FieldPanel('contact_phone'),
+        ], heading="聯絡資訊"),
         
-        MultiFieldPanel([
-            FieldPanel('feature_2_icon'),
-            FieldPanel('feature_2_title'),
-            FieldPanel('feature_2_text'),
-        ], heading="特色2"),
+        FieldPanel('hero_description'),
         
-        MultiFieldPanel([
-            FieldPanel('feature_3_icon'),
-            FieldPanel('feature_3_title'),
-            FieldPanel('feature_3_text'),
-        ], heading="特色3"),
+        InlinePanel('news_items', label="最新消息"),
+        InlinePanel('topics', label="徵稿主題"),
+        InlinePanel('timeline_events', label="重要時程"),
     ]
-
+    
+    # 限制只能有一個首頁
+    max_count = 1
+    
     class Meta:
-        verbose_name = "首頁"
+        verbose_name = "研討會首頁"
+
+
+class NewsItem(ClusterableModel):
+    """最新消息"""
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='news_items')
+    date = models.DateField("日期")
+    category = models.CharField("分類", max_length=50, choices=[
+        ('重要公告', '重要公告'),
+        ('活動消息', '活動消息'),
+        ('系統更新', '系統更新'),
+    ])
+    title = models.CharField("標題", max_length=255)
+    link = models.URLField("連結", blank=True)
+    
+    panels = [
+        FieldPanel('date'),
+        FieldPanel('category'),
+        FieldPanel('title'),
+        FieldPanel('link'),
+    ]
+    
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "最新消息"
+        verbose_name_plural = "最新消息"
+
+
+class Topic(ClusterableModel):
+    """徵稿主題"""
+    ICON_CHOICES = [
+        ('Map', '地圖'),
+        ('Zap', '閃電'),
+        ('Shield', '盾牌'),
+        ('Globe', '地球'),
+        ('Cpu', 'CPU'),
+        ('Database', '資料庫'),
+    ]
+    
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='topics')
+    title = models.CharField("主題標題", max_length=100)
+    description = models.TextField("主題描述")
+    icon_name = models.CharField("圖示", max_length=50, choices=ICON_CHOICES, default='Map')
+    order = models.IntegerField("排序", default=0)
+    
+    panels = [
+        FieldPanel('title'),
+        FieldPanel('description'),
+        FieldPanel('icon_name'),
+        FieldPanel('order'),
+    ]
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = "徵稿主題"
+        verbose_name_plural = "徵稿主題"
+
+
+class TimelineEvent(ClusterableModel):
+    """重要時程"""
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='timeline_events')
+    date = models.DateField("日期")
+    title = models.CharField("事件標題", max_length=100)
+    is_past = models.BooleanField("已過期", default=False)
+    order = models.IntegerField("排序", default=0)
+    
+    panels = [
+        FieldPanel('date'),
+        FieldPanel('title'),
+        FieldPanel('is_past'),
+        FieldPanel('order'),
+    ]
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = "時程事件"
+        verbose_name_plural = "時程事件"
